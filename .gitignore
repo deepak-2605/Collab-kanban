@@ -1,0 +1,25 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+backend/backend
+backend/tmp/
+coverage.out
+
+# Env / secrets
+.env
+*.env.local
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
