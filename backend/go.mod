@@ -1,4 +1,4 @@
-module github.com/deepaksingh2614/collab-kanban/backend
+module github.com/deepak-2605/collab-kanban/backend
 
 go 1.26.3
 

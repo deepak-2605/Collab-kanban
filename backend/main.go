@@ -3,41 +3,45 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
+	"github.com/deepak-2605/collab-kanban/backend/internal/config"
+	"github.com/deepak-2605/collab-kanban/backend/internal/db"
+	"github.com/deepak-2605/collab-kanban/backend/internal/handler"
+	"github.com/deepak-2605/collab-kanban/backend/internal/middleware"
+	"github.com/deepak-2605/collab-kanban/backend/internal/repository"
+	"github.com/deepak-2605/collab-kanban/backend/internal/service"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"status":"ok"}`))
-
-}
-
-var usersColl *mongo.Collection
-
 func main() {
-
 	if err := godotenv.Load(); err != nil {
 		log.Println("no .env file found, using system env vars")
 	}
+
+	cfg := config.Load()
+	database := db.Connect(cfg.MongoURI, cfg.DBName)
+
+	userRepo := repository.NewUserRepository(database)
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+	authHandler := handler.NewAuthHandler(authService)
+
 	r := chi.NewRouter()
 
-	client := connectMongo()
-	usersColl = client.Database("kanban").Collection("users")
-
-	r.Get("/health", healthHandler)
-	r.Post("/register", registerHandler)
-	r.Post("/login", loginHandler)
-	r.Group(func(r chi.Router) {
-		r.Use(authMiddleware) // everything in here requires a valid token
-		r.Get("/me", meHandler)
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-type", "application/json")
+		w.Write([]byte(`{"status":"ok"}`))
 	})
-	port := os.Getenv("PORT")
-	log.Println("Listening on", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+
+	r.Post("/register", authHandler.Register)
+	r.Post("/login", authHandler.Login)
+
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Auth(cfg.JWTSecret))
+		r.Get("/me", authHandler.Me)
+	})
+
+	log.Println("Listening on " + cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, r))
 
 }

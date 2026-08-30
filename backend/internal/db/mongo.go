@@ -1,18 +1,16 @@
-package main
+package db
 
 import (
 	"context"
 	"log"
-	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func connectMongo() *mongo.Client {
-	connUri := os.Getenv("MONGO_URI")
-	client, err := mongo.Connect(options.Client().ApplyURI(connUri))
+func Connect(uri, dbName string) *mongo.Database {
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
 
 	if err != nil {
 		log.Fatal(err)
@@ -27,6 +25,5 @@ func connectMongo() *mongo.Client {
 	}
 	log.Println("connecte to MongoDB")
 
-	return client
-
+	return client.Database(dbName)
 }
