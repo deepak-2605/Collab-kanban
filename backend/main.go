@@ -26,6 +26,10 @@ func main() {
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
 	authHandler := handler.NewAuthHandler(authService)
 
+	boardRepo := repository.NewBoardRepository(database)
+	boardService := service.NewBoardService(boardRepo)
+	boardHandler := handler.NewBoardHandler(boardService)
+
 	r := chi.NewRouter()
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -39,6 +43,11 @@ func main() {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.Auth(cfg.JWTSecret))
 		r.Get("/me", authHandler.Me)
+
+		r.Get("/boards", boardHandler.List)
+		r.Post("/boards", boardHandler.Create)
+		r.Patch("/boards/{boardID}", boardHandler.Rename)
+		r.Delete("/boards/{boardID}", boardHandler.Delete)
 	})
 
 	log.Println("Listening on " + cfg.Port)

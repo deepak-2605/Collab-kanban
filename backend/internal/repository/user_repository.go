@@ -29,9 +29,17 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 // Create — It creates a user
 func (r *UserRepository) Create(ctx context.Context, user *models.User) error {
 
-	_, err := r.coll.InsertOne(ctx, user)
+	res, err := r.coll.InsertOne(ctx, user)
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	if oid, ok := res.InsertedID.(bson.ObjectID); ok {
+		user.ID = oid
+	}
+
+	return nil
 }
 
 // FindByID
