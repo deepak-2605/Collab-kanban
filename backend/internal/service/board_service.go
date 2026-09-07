@@ -59,16 +59,16 @@ func (s *BoardService) Create(ctx context.Context, name string, userID bson.Obje
 
 // List the repo
 func (s *BoardService) List(ctx context.Context, userID bson.ObjectID) ([]models.Board, error) {
-	boards,err:= s.repo.FindByUser(ctx, userID)
+	boards, err := s.repo.FindByUser(ctx, userID)
 
-	if err!=nil {
-		return nil,err
+	if err != nil {
+		return nil, err
 	}
 
 	if boards == nil {
 		boards = []models.Board{}
 	}
-	return boards,nil
+	return boards, nil
 }
 
 // Rename the board

@@ -30,6 +30,10 @@ func main() {
 	boardService := service.NewBoardService(boardRepo)
 	boardHandler := handler.NewBoardHandler(boardService)
 
+	columnRepo := repository.NewColumnRepository(database)
+	columnService := service.NewColumnService(columnRepo,boardRepo)
+	columnHandler := handler.NewColumnHandler(columnService)
+
 	r := chi.NewRouter()
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -48,6 +52,10 @@ func main() {
 		r.Post("/boards", boardHandler.Create)
 		r.Patch("/boards/{boardID}", boardHandler.Rename)
 		r.Delete("/boards/{boardID}", boardHandler.Delete)
+		r.Get("/boards/{boardID}/columns",columnHandler.List)
+		r.Post("/boards/{boardID}/columns",columnHandler.Create)
+		r.Patch("/columns/{columnID}",columnHandler.Rename)
+		r.Delete("/columns/{columnID}",columnHandler.Delete)
 	})
 
 	log.Println("Listening on " + cfg.Port)
