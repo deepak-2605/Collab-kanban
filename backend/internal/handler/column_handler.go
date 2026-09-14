@@ -21,20 +21,20 @@ func NewColumnHandler(s *service.ColumnService) *ColumnHandler {
 }
 
 // Create - it creates a newColumn POST:- /boards/{boardID}/column
-func (h *ColumnHandler) Create(w http.ResponseWriter,r *http.Request){
+func (h *ColumnHandler) Create(w http.ResponseWriter, r *http.Request) {
 
-	boardID,err:=bson.ObjectIDFromHex(chi.URLParam(r,"boardID"))
+	boardID, err := bson.ObjectIDFromHex(chi.URLParam(r, "boardID"))
 
-	if err!=nil {
+	if err != nil {
 		http.Error(w, "invalid board id", http.StatusBadRequest)
 		return
 	}
 
-	var req struct{
+	var req struct {
 		Name string `json:"name"`
 	}
 
-	if err=json.NewDecoder(r.Body).Decode(&req);err!=nil || req.Name == "" {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
 		http.Error(w, "name is required", http.StatusBadRequest)
 	}
 
@@ -59,13 +59,11 @@ func (h *ColumnHandler) Create(w http.ResponseWriter,r *http.Request){
 }
 
 // List :- list all columns for a board GET: /boards/{boardID}/columns
-func (h *ColumnHandler) List(w http.ResponseWriter,r *http.Request){
+func (h *ColumnHandler) List(w http.ResponseWriter, r *http.Request) {
 
-	boardID,err:=bson.ObjectIDFromHex(chi.URLParam(r,"boardID"))
-    
-	
-	
-	if err!=nil {
+	boardID, err := bson.ObjectIDFromHex(chi.URLParam(r, "boardID"))
+
+	if err != nil {
 		http.Error(w, "invalid board id", http.StatusBadRequest)
 		return
 	}
@@ -79,7 +77,7 @@ func (h *ColumnHandler) List(w http.ResponseWriter,r *http.Request){
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	cols, err := h.service.List(ctx,boardID,userID)
+	cols, err := h.service.List(ctx, boardID, userID)
 	if err != nil {
 		mapBoardError(w, err) // reuses 404/403/500 mapping
 		return
@@ -91,20 +89,20 @@ func (h *ColumnHandler) List(w http.ResponseWriter,r *http.Request){
 }
 
 // Rename :- rename a col PATCH /columns/{columnID}
-func(h *ColumnHandler) Rename(w http.ResponseWriter,r* http.Request){
-    
-	columnID,err:=bson.ObjectIDFromHex(chi.URLParam(r,"columnID"))
+func (h *ColumnHandler) Rename(w http.ResponseWriter, r *http.Request) {
 
-	if err!=nil {
+	columnID, err := bson.ObjectIDFromHex(chi.URLParam(r, "columnID"))
+
+	if err != nil {
 		http.Error(w, "invalid column id", http.StatusBadRequest)
 		return
 	}
-    
-	var req struct{
+
+	var req struct {
 		Name string `json:"name"`
 	}
 
-	if err=json.NewDecoder(r.Body).Decode(&req);err!=nil || req.Name == "" {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
 		http.Error(w, "name is required", http.StatusBadRequest)
 		return
 	}
@@ -118,7 +116,7 @@ func(h *ColumnHandler) Rename(w http.ResponseWriter,r* http.Request){
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	err = h.service.Rename(ctx,columnID,userID,req.Name)
+	err = h.service.Rename(ctx, columnID, userID, req.Name)
 
 	if err != nil {
 		mapBoardError(w, err) // reuses 404/403/500 mapping
@@ -131,11 +129,11 @@ func(h *ColumnHandler) Rename(w http.ResponseWriter,r* http.Request){
 
 // Delete - delete the column
 // DELETE /columns/{columnID}
-func(h *ColumnHandler) Delete(w  http.ResponseWriter,r* http.Request){
-    
-	columnID,err:=bson.ObjectIDFromHex(chi.URLParam(r,"columnID"))
+func (h *ColumnHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
-	if err!=nil {
+	columnID, err := bson.ObjectIDFromHex(chi.URLParam(r, "columnID"))
+
+	if err != nil {
 		http.Error(w, "invalid column id", http.StatusBadRequest)
 		return
 	}
@@ -149,15 +147,13 @@ func(h *ColumnHandler) Delete(w  http.ResponseWriter,r* http.Request){
 	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
-	err = h.service.Delete(ctx,columnID,userID)
+	err = h.service.Delete(ctx, columnID, userID)
 
-	if err!=nil {
-		mapBoardError(w,err)
+	if err != nil {
+		mapBoardError(w, err)
 		return
 	}
 
-    w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
-
-

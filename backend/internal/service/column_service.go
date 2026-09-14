@@ -18,7 +18,7 @@ func NewColumnService(repo *repository.ColumnRepository, boardRepo *repository.B
 	return &ColumnService{repo: repo, boardRepo: boardRepo}
 }
 
-//assertBoardAccess — owner OR member may manage this board's columns.
+// assertBoardAccess — owner OR member may manage this board's columns.
 // (Reuses ErrNotFound / ErrForbidden already defined in board_service.go — same package.)
 func (s *ColumnService) assertBoardAccess(ctx context.Context, boardID, userID bson.ObjectID) error {
 	board, err := s.boardRepo.FindByID(ctx, boardID)

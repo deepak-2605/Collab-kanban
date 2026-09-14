@@ -11,6 +11,7 @@ import (
 	"github.com/deepak-2605/collab-kanban/backend/internal/repository"
 	"github.com/deepak-2605/collab-kanban/backend/internal/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -31,10 +32,22 @@ func main() {
 	boardHandler := handler.NewBoardHandler(boardService)
 
 	columnRepo := repository.NewColumnRepository(database)
-	columnService := service.NewColumnService(columnRepo,boardRepo)
+	columnService := service.NewColumnService(columnRepo, boardRepo)
 	columnHandler := handler.NewColumnHandler(columnService)
 
+	cardRepo := repository.NewCardRepository(database)
+	cardService := service.NewCardService(cardRepo, columnRepo, boardRepo)
+	cardHandler := handler.NewCardHandler(cardService)
+
 	r := chi.NewRouter()
+
+	// allow the React dev server (different origin) to call this API
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:5173", "http://localhost:5174"},
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	}))
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-type", "application/json")
@@ -52,10 +65,16 @@ func main() {
 		r.Post("/boards", boardHandler.Create)
 		r.Patch("/boards/{boardID}", boardHandler.Rename)
 		r.Delete("/boards/{boardID}", boardHandler.Delete)
-		r.Get("/boards/{boardID}/columns",columnHandler.List)
-		r.Post("/boards/{boardID}/columns",columnHandler.Create)
-		r.Patch("/columns/{columnID}",columnHandler.Rename)
-		r.Delete("/columns/{columnID}",columnHandler.Delete)
+		r.Get("/boards/{boardID}/columns", columnHandler.List)
+		r.Post("/boards/{boardID}/columns", columnHandler.Create)
+		r.Patch("/columns/{columnID}", columnHandler.Rename)
+		r.Delete("/columns/{columnID}", columnHandler.Delete)
+
+		r.Get("/columns/{columnID}/cards", cardHandler.List)
+		r.Post("/columns/{columnID}/cards", cardHandler.Create)
+		r.Patch("/cards/{cardID}", cardHandler.Update)
+		r.Patch("/cards/{cardID}/move", cardHandler.Move)
+		r.Delete("/cards/{cardID}", cardHandler.Delete)
 	})
 
 	log.Println("Listening on " + cfg.Port)

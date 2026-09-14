@@ -45,7 +45,7 @@ func (r *ColumnRepository) FindByID(ctx context.Context, id bson.ObjectID) (*mod
 	return &column, nil
 }
 
-// Update - update the mutable fields of an existing board.
+// Update - update the mutable fields of an existing column.
 func (r *ColumnRepository) Update(ctx context.Context, column *models.Column) error {
 	_, err := r.coll.UpdateOne(ctx,
 		bson.M{"_id": column.ID},
